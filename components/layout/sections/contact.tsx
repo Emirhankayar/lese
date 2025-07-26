@@ -52,7 +52,7 @@ export const ContactSection = () => {
     const { firstName, lastName, email, subject, message } = values;
     console.log(values);
 
-    const mailToLink = `mailto:lesemetal.info@gmail.com?subject=${subject}&body=Merhaba ben, ${firstName} ${lastName}, email adresim ${email}. %0D%0A${message}`;
+    const mailToLink = `mailto:info@lesemetalcraft.com?subject=${subject}&body=Merhaba ben, ${firstName} ${lastName}, email adresim ${email}. %0D%0A${message}`;
 
     window.location.href = mailToLink;
   }
