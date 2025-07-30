@@ -48,6 +48,11 @@ const routeList: RouteProps[] = [
     href: "#contact",
     label: "İletişim",
   },
+  {
+    href: "/shop",
+    label: "Shop",
+  },
+
 ];
 
 /*const featureList: FeatureProps[] = [
