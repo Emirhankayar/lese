@@ -1,5 +1,6 @@
 import { FooterSection } from "@/components/layout/sections/footer";
-import { ProductSection } from "@/components/layout/sections/product";
+import ProductDetailSection from "@/components/layout/sections/productdetail";
+
 export const metadata = {
   title: "LESE - Metalcraft",
   description: "LESE Metalcraft Ltd. Şti. – Hassas Metal İşleme ve Üretim",
@@ -29,12 +30,11 @@ export const metadata = {
 };
 
 
-import ProductDetailPage from "@/components/layout/sections/productdetail";
-
-export default function ShopDetail({ params }: { params: { productId: string } }) {
+export default function ProductDetail() {
   return (
     <>
-      <ProductDetailPage params={params} />
+
+      <ProductDetailSection/>
       <FooterSection />
     </>
   );

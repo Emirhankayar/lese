@@ -1,128 +1,61 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { supabase } from "@/lib/sbClient";
 import Image from "next/image";
 import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
 import { notFound } from "next/navigation";
 import LinkedInIcon from "@/components/icons/linkedin-icon";
 import XIcon from "@/components/icons/x-icon";
-import Link from "next/link";
-import { useState } from "react";
 
 interface ProductProps {
-  productId: string;
-  productImage: string[];
-  productName: string;
-  productPrice: string;
-  productCategory: string[];
-  productDescription: string[];
-  productLink: SocialNetworkProps[];
+  id: string;
+  title: string;
+  price: number;
+  description: string[] | null;
+  category: string[] | null;
+  images: string[];
+  weight: number[] | null;
+  weight_unit: string[] | null;
+  size: number[] | null;
+  size_unit: string[] | null;
+  rating: number;
+  clicks: number;
 }
 
-interface SocialNetworkProps {
-  name: string;
-  url: string;
-}
+export default function ProductDetailSection() {
+  const { productId } = useParams();
+  const [product, setProduct] = useState<ProductProps | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-const productList: ProductProps[] = [
-  {
-    productId: "1",
-    productImage: [
-      "https://plus.unsplash.com/premium_photo-1677612031058-e90a2a6c03ed?q=80&w=871&auto=format&fit=crop",
-"https://images.unsplash.com/photo-1605701249987-f0bb9b505d06?q=80&w=872&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D","https://plus.unsplash.com/premium_photo-1723759330931-1d52b4a1e6ea?q=80&w=895&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    ],
-    productName: "Ürün İsmi 1",
-    productPrice: "- 25$",
-    productCategory: ["Ürün kategorısı"],
-    productDescription: ["This is a sample product description for the product."],
-    productLink: [{ name: "X", url: "https://x.com/leo_mirand4" }],
-  },
-    {
-    productId: "2",
-    productImage: [
-      "https://plus.unsplash.com/premium_photo-1677612031058-e90a2a6c03ed?q=80&w=871&auto=format&fit=crop",
-"https://images.unsplash.com/photo-1605701249987-f0bb9b505d06?q=80&w=872&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D","https://plus.unsplash.com/premium_photo-1723759330931-1d52b4a1e6ea?q=80&w=895&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    ],
-    productName: "Ürün İsmi 1",
-    productPrice: "- 25$",
-    productCategory: ["Ürün kategorısı"],
-    productDescription: ["This is a sample product description for the product."],
-    productLink: [{ name: "X", url: "https://x.com/leo_mirand4" }],
-  },
-    {
-    productId: "3",
-    productImage: [
-      "https://plus.unsplash.com/premium_photo-1677612031058-e90a2a6c03ed?q=80&w=871&auto=format&fit=crop",
-"https://images.unsplash.com/photo-1605701249987-f0bb9b505d06?q=80&w=872&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D","https://plus.unsplash.com/premium_photo-1723759330931-1d52b4a1e6ea?q=80&w=895&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    ],
-    productName: "Ürün İsmi 1",
-    productPrice: "- 25$",
-    productCategory: ["Ürün kategorısı"],
-    productDescription: ["This is a sample product description for the product."],
-    productLink: [{ name: "X", url: "https://x.com/leo_mirand4" }],
-  },
-    {
-    productId: "4",
-    productImage: [
-      "https://plus.unsplash.com/premium_photo-1677612031058-e90a2a6c03ed?q=80&w=871&auto=format&fit=crop",
-"https://images.unsplash.com/photo-1605701249987-f0bb9b505d06?q=80&w=872&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D","https://plus.unsplash.com/premium_photo-1723759330931-1d52b4a1e6ea?q=80&w=895&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    ],
-    productName: "Ürün İsmi 1",
-    productPrice: "- 25$",
-    productCategory: ["Ürün kategorısı"],
-    productDescription: ["This is a sample product description for the product."],
-    productLink: [{ name: "X", url: "https://x.com/leo_mirand4" }],
-  },
-    {
-    productId: "5",
-    productImage: [
-      "https://plus.unsplash.com/premium_photo-1677612031058-e90a2a6c03ed?q=80&w=871&auto=format&fit=crop",
-"https://images.unsplash.com/photo-1605701249987-f0bb9b505d06?q=80&w=872&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D","https://plus.unsplash.com/premium_photo-1723759330931-1d52b4a1e6ea?q=80&w=895&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    ],
-    productName: "Ürün İsmi 1",
-    productPrice: "- 25$",
-    productCategory: ["Ürün kategorısı"],
-    productDescription: ["This is a sample product description for the product."],
-    productLink: [{ name: "X", url: "https://x.com/leo_mirand4" }],
-  },
-    {
-    productId: "6",
-    productImage: [
-      "https://plus.unsplash.com/premium_photo-1677612031058-e90a2a6c03ed?q=80&w=871&auto=format&fit=crop",
-"https://images.unsplash.com/photo-1605701249987-f0bb9b505d06?q=80&w=872&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D","https://plus.unsplash.com/premium_photo-1723759330931-1d52b4a1e6ea?q=80&w=895&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    ],
-    productName: "Ürün İsmi 1",
-    productPrice: "- 25$",
-    productCategory: ["Ürün kategorısı"],
-    productDescription: ["This is a sample product description for the product."],
-    productLink: [{ name: "X", url: "https://x.com/leo_mirand4" }],
-  },
-    {
-    productId: "7",
-    productImage: [
-      "https://plus.unsplash.com/premium_photo-1677612031058-e90a2a6c03ed?q=80&w=871&auto=format&fit=crop",
-"https://images.unsplash.com/photo-1605701249987-f0bb9b505d06?q=80&w=872&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D","https://plus.unsplash.com/premium_photo-1723759330931-1d52b4a1e6ea?q=80&w=895&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    ],
-    productName: "Ürün İsmi 1",
-    productPrice: "- 25$",
-    productCategory: ["Ürün kategorısı"],
-    productDescription: ["This is a sample product description for the product."],
-    productLink: [{ name: "X", url: "https://x.com/leo_mirand4" }],
-  },
-    {
-    productId: "8",
-    productImage: [
-      "https://plus.unsplash.com/premium_photo-1677612031058-e90a2a6c03ed?q=80&w=871&auto=format&fit=crop",
-"https://images.unsplash.com/photo-1605701249987-f0bb9b505d06?q=80&w=872&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D","https://plus.unsplash.com/premium_photo-1723759330931-1d52b4a1e6ea?q=80&w=895&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"    ],
-    productName: "Ürün İsmi 1",
-    productPrice: "- 25$",
-    productCategory: ["Ürün kategorısı"],
-    productDescription: ["This is a sample product description for the product."],
-    productLink: [{ name: "X", url: "https://x.com/leo_mirand4" }],
-  },
+  useEffect(() => {
+    const fetchProduct = async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", productId)
+        .single();
 
-];
+      if (error || !data) {
+        console.error(error);
+        setProduct(null);
+      } else {
+        data.price = typeof data.price === "string" ? parseFloat(data.price) : data.price;
 
-export default function ProductDetailPage({ params }: { params: { productId: string } }) {
-  const { productId } = params;
-  const product = productList.find((p) => p.productId === productId);
+        setProduct(data);
+        setSelectedImage(data.images[0]);
+      }
+      setLoading(false);
+    };
 
+    fetchProduct();
+  }, [productId]);
+
+  if (loading) return <p className="text-center py-10">Loading...</p>;
   if (!product) return notFound();
-
-  const [selectedImage, setSelectedImage] = useState(product.productImage[0]);
 
   const socialIcon = (name: string) => {
     switch (name) {
@@ -130,6 +63,8 @@ export default function ProductDetailPage({ params }: { params: { productId: str
         return <LinkedInIcon />;
       case "X":
         return <XIcon />;
+      default:
+        return null;
     }
   };
 
@@ -138,20 +73,17 @@ export default function ProductDetailPage({ params }: { params: { productId: str
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {/* IMAGE SECTION */}
         <div>
-          {/* Main Zoomable Image */}
           <Zoom>
             <Image
-              src={selectedImage}
-              alt={product.productName}
+              src={selectedImage!}
+              alt={product.title}
               width={600}
               height={600}
               className="w-full object-cover rounded-xl cursor-zoom-in"
             />
           </Zoom>
-
-          {/* Thumbnail Images */}
           <div className="flex gap-4 mt-4">
-            {product.productImage.map((img, i) => (
+            {product.images.map((img, i) => (
               <button key={i} onClick={() => setSelectedImage(img)}>
                 <Image
                   src={img}
@@ -169,35 +101,36 @@ export default function ProductDetailPage({ params }: { params: { productId: str
 
         {/* PRODUCT INFO */}
         <div>
-          <h1 className="text-4xl font-bold mb-4">{product.productName}</h1>
-          <p className="text-2xl text-primary mb-4">{product.productPrice}</p>
+          <h1 className="text-4xl font-bold mb-4">{product.title}</h1>
+          <p className="text-2xl text-primary mb-4">${product.price.toFixed(2)}</p>
+
           <div className="mb-4">
-            {product.productCategory.map((cat, i) => (
+            {(product.category ?? []).map((cat, i) => (
               <span key={i} className="text-muted-foreground">
                 {cat}
-                {i < product.productCategory.length - 1 && ", "}
+                {i < (product.category?.length ?? 0) - 1 ? ", " : ""}
               </span>
             ))}
           </div>
+
           <div className="space-y-2 text-muted-foreground mb-6">
-            {product.productDescription.map((desc, i) => (
+            {(product.description ?? []).map((desc, i) => (
               <p key={i}>{desc}</p>
             ))}
           </div>
 
-          {/* Social Links */}
+          {/* Remove or add social links only if your DB has that field */}
+          {/* 
           <div className="flex space-x-4 mb-8">
-            {product.productLink.map((link, i) => (
+            {product.link?.map((link, i) => (
               <Link key={i} href={link.url} target="_blank" className="hover:opacity-80">
                 {socialIcon(link.name)}
               </Link>
             ))}
           </div>
+          */}
 
-          {/* Buy Button */}
-          <button className="px-6 py-3 rounded-lg hover:bg-primary/80">
-            Satın Al
-          </button>
+          <button className="px-6 py-3 rounded-lg hover:bg-primary/80">Satın Al</button>
         </div>
       </div>
     </div>
