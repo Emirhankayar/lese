@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/sbClient";
 import Image from "next/image";
@@ -39,7 +39,6 @@ interface Product {
   comments?: Comment[];
 }
 
-// PostgreSQL array parser
 const parseArray = (value: any): string[] => {
   if (!value) return [];
   if (Array.isArray(value)) return value;
@@ -69,6 +68,14 @@ const ProductDetailSection = () => {
   const [isAddingComment, setIsAddingComment] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showCommentInput, setShowCommentInput] = useState(false);
+
+  // Image zoom states
+  const zoomRef = useRef<HTMLDivElement>(null);
+  const [zoomActive, setZoomActive] = useState(false);
+  const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
+  const openFullscreen = () => setIsFullscreenOpen(true);
+  const closeFullscreen = () => setIsFullscreenOpen(false);
 
   // Function to refresh product data and user interactions
   const refreshProductData = async () => {
@@ -109,11 +116,11 @@ const ProductDetailSection = () => {
       setError(null);
 
       try {
-        // Check if user is authenticated
+        
         const { data: { user } } = await supabase.auth.getUser();
         setIsAuthenticated(!!user);
 
-        // Use the database function to get complete product details with user interactions
+        
         const { data, error } = await supabase.rpc('get_product_with_details', {
           product_uuid: productId,
           user_uuid: user?.id || null,
@@ -127,7 +134,6 @@ const ProductDetailSection = () => {
           setProduct(data.product);
           setComments(data.comments || []);
           
-          // Set user interactions if available
           if (data.user_interactions && user) {
             setHasLiked(data.user_interactions.has_liked);
             setUserRating(data.user_interactions.user_rating || 0);
@@ -155,11 +161,11 @@ const ProductDetailSection = () => {
     try {
       const supabase = createClient();
       
-      // Example order creation
+      
       const { data, error } = await supabase.rpc('create_order', {
         product_uuid: product.id,
         quantity_val: 1,
-        selected_price_val: parseArray(product.price)[0], // Use first price as default
+        selected_price_val: parseArray(product.price)[0],
       });
 
       if (error) {
@@ -167,7 +173,7 @@ const ProductDetailSection = () => {
         alert(`Failed to add to cart: ${error.message}`);
       } else if (data?.success) {
         alert("Item added to cart!");
-        // Refresh product data to get updated information
+        
         await refreshProductData();
       } else {
         alert(`Failed to add to cart: ${data?.error || 'Unknown error'}`);
@@ -201,14 +207,13 @@ const ProductDetailSection = () => {
       }
 
       if (data?.success) {
-        // Update local state immediately for responsive UI
+  
         setHasLiked(data.liked);
         setProduct(prev => prev ? {
           ...prev,
           likes_count: data.like_count
         } : null);
         
-        // Refresh to ensure consistency
         await refreshProductData();
       } else {
         console.error('Function returned error:', data?.error);
@@ -242,7 +247,6 @@ const ProductDetailSection = () => {
       }
 
       if (data?.success) {
-        // Update local state immediately for responsive UI
         setUserRating(rating);
         setProduct(prev => prev ? {
           ...prev,
@@ -250,7 +254,7 @@ const ProductDetailSection = () => {
           rating_count: data.rating_count
         } : null);
         
-        // Refresh to ensure consistency
+        
         await refreshProductData();
       } else {
         console.error('Function returned error:', data?.error);
@@ -285,11 +289,11 @@ const ProductDetailSection = () => {
       }
 
       if (data?.success) {
-        // Clear the input and hide the form
+
         setNewComment("");
         setShowCommentInput(false);
         
-        // Refresh all product data including comments
+        
         await refreshProductData();
 
         alert('Yorum başarıyla eklendi!');
@@ -337,13 +341,28 @@ const ProductDetailSection = () => {
     );
   }
 
-  // Parse PostgreSQL arrays
+
   const prices = parseArray(product.price);
   const categories = parseArray(product.category);
   
   const weights = parseArray(product.weight);
   const sizes = parseArray(product.size);
-  
+
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!zoomRef.current) return;
+
+    const rect = zoomRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    setZoomPosition({ x, y });
+    setZoomActive(true);
+  };
+
+  const handleMouseLeave = () => {
+    setZoomActive(false);
+  };
   // Better image handling in your component
   const images = parseArray(product.images).filter(img => img && img.trim() !== '');
   const currentImage = (images.length > 0 && images[selectedImageIndex]) 
@@ -354,22 +373,33 @@ const ProductDetailSection = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Product Images */}
         <div className="space-y-4">
-          <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
-            {currentImage && (
-              <Image
-                src={currentImage}
-                alt={product.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-            )}
-            {product.featured && (
-              <div className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
-                Featured
-              </div>
-            )}
-          </div>
+<div
+  className="aspect-square relative overflow-hidden rounded-lg bg-gray-100 cursor-zoom-in"
+  onMouseMove={handleMouseMove}
+  onMouseLeave={handleMouseLeave}
+  onClick={openFullscreen}    
+  ref={zoomRef}
+>
+  {currentImage && (
+    <Image
+      src={currentImage}
+      alt={product.title}
+      fill
+      className="object-cover transition-transform duration-300"
+      style={{
+        transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+        transform: zoomActive ? 'scale(1.2)' : 'scale(1)',
+      }}
+    />
+  )}
+
+  {product.featured && (
+    <div className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
+      Öne Çıkan
+    </div>
+  )}
+</div>
+
 
           {images.length > 1 && (
             <div className="flex gap-2 overflow-x-auto">
@@ -460,7 +490,7 @@ const ProductDetailSection = () => {
           <div className="flex items-center gap-2">
             <Package className="w-4 h-4" />
             <span className={`font-medium ${product.stock ? 'text-green-600' : 'text-red-600'}`}>
-              {product.stock ? 'In Stock' : 'Out of Stock'}
+              {product.stock ? 'Stokta Mevcut' : 'Stokta Yok'}
             </span>
           </div>
 
@@ -621,7 +651,23 @@ const ProductDetailSection = () => {
           </Card>
         )}
       </div>
+      {isFullscreenOpen && (
+  <div
+  className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 cursor-zoom-out"
+    onClick={closeFullscreen}
+  >
+    <Image
+      src={currentImage}
+      alt={product.title}
+      width={800}   
+      height={800}
+      className="object-contain p-8 max-h-full max-w-full"
+      priority
+    />
+  </div>
+)}
     </div>
+    
   );
 };
 

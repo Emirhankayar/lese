@@ -129,7 +129,7 @@ export const ProductSection = ({
   return (
     <section id="product" className="container lg:w-[75%] py-24 sm:py-32">
       <div className="text-center mb-8">
-        <h2 className="text-lg text-primary mb-2">Online-Sipariş</h2>
+        <h2 className="text-lg text-primary mb-2">Online-Mağaza</h2>
         <h2 className="text-3xl md:text-4xl font-bold">Ürünler ve Hizmetler</h2>
         {(categoryFilter || searchTerm) && (
           <p className="text-muted-foreground mt-2">

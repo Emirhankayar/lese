@@ -7,5 +7,4 @@ export function createClient() {
   return createBrowserClient(supabaseUrl, supabaseAnonKey)
 }
 
-// For convenience, you can still export a default client
 export const supabase = createClient()

@@ -45,7 +45,7 @@ const routeList: RouteProps[] = [
   },
   {
     href: "/shop",
-    label: "Shop",
+    label: "Mağaza",
   },
 ];
 
@@ -60,7 +60,6 @@ export const Navbar = () => {
     
     async function initializeAuth() {
       try {
-        // First, try to refresh the session
         const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
         
         if (refreshError) {
@@ -84,8 +83,6 @@ export const Navbar = () => {
     }
 
     initializeAuth();
-
-    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event, session);
@@ -114,7 +111,6 @@ export const Navbar = () => {
       } else {
         setUser(null);
         setIsOpen(false);
-        // Force page refresh to clear any cached state
         window.location.reload();
       }
     } catch (error) {
@@ -122,10 +118,10 @@ export const Navbar = () => {
     }
   }
 
-  // Show loading state while checking auth
-  if (loading) {
-    return (
-      <header className="shadow-inner bg-opacity-15 w-[90%] md:w-[70%] lg:w-[75%] lg:max-w-screen-xl top-5 mx-auto sticky border border-secondary z-40 rounded-2xl flex justify-between items-center p-2 bg-card">
+/*
+if (loading) {
+  return (
+    <header className="shadow-inner bg-opacity-15 w-[90%] md:w-[70%] lg:w-[75%] lg:max-w-screen-xl top-5 mx-auto sticky border border-secondary z-40 rounded-2xl flex justify-between items-center p-2 bg-card">
         <Link href="/" className="font-bold text-lg flex items-center">
           <Image src={leseicon} alt="LESE logo" className="ml-2 w-20" />
         </Link>
@@ -133,6 +129,7 @@ export const Navbar = () => {
       </header>
     );
   }
+ */
 
   return (
     <header className="shadow-inner bg-opacity-15 w-[90%] md:w-[70%] lg:w-[75%] lg:max-w-screen-xl top-5 mx-auto sticky border border-secondary z-40 rounded-2xl flex justify-between items-center p-2 bg-card">
@@ -165,11 +162,11 @@ export const Navbar = () => {
                 {/* Auth buttons */}
                 {user ? (
                   <Button onClick={handleSignOut} variant="ghost" className="justify-start text-base">
-                    Sign Out ({user.email})
+                    Çıkış Yap ({user.email})
                   </Button>
                 ) : (
                   <Button onClick={() => setIsOpen(false)} asChild variant="ghost" className="justify-start text-base">
-                    <Link href="/auth">Sign In</Link>
+                    <Link href="/auth">Giriş Yap</Link>
                   </Button>
                 )}
               </div>
@@ -197,12 +194,12 @@ export const Navbar = () => {
             {/* Auth buttons desktop */}
             {user ? (
               <Button onClick={handleSignOut} variant="ghost" className="text-base px-2">
-                Sign Out
+                Çıkış Yap
               </Button>
             ) : (
               <NavigationMenuLink asChild>
                 <Link href="/auth" className="text-base px-2">
-                  Sign In
+                  Giriş Yap
                 </Link>
               </NavigationMenuLink>
             )}
