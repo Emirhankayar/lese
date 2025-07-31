@@ -1,8 +1,8 @@
 "use client";
-/*import { ChevronsDown, Github, Menu } from "lucide-react";*/
 import { Menu } from "lucide-react";
 import leseicon from "../icons/g14.svg";
-import React from "react";
+import React, { useEffect, useState } from 'react';
+import { createClient } from "@/lib/sbClient";
 import {
   Sheet,
   SheetContent,
@@ -30,11 +30,6 @@ interface RouteProps {
   label: string;
 }
 
-/*interface FeatureProps {
-  title: string;
-  description: string;
-}*/
-
 const routeList: RouteProps[] = [
   {
     href: "#about",
@@ -52,128 +47,144 @@ const routeList: RouteProps[] = [
     href: "/shop",
     label: "Shop",
   },
-
 ];
-
-/*const featureList: FeatureProps[] = [
-  {
-    title: "Showcase Your Value ",
-    description: "Highlight how your product solves user problems.",
-  },
-  {
-    title: "Build Trust",
-    description:
-      "Leverages social proof elements to establish trust and credibility.",
-  },
-  {
-    title: "Capture Leads",
-    description:
-      "Make your lead capture form visually appealing and strategically.",
-  },
-];
-*/
 
 export const Navbar = () => {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const supabase = createClient();
+    
+    async function initializeAuth() {
+      try {
+        // First, try to refresh the session
+        const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+        
+        if (refreshError) {
+          console.log("Refresh failed, getting current session:", refreshError.message);
+          const { data: { session }, error } = await supabase.auth.getSession();
+          if (error) {
+            console.error("Session error:", error);
+          } else {
+            console.log("Current session:", session);
+            setUser(session?.user ?? null);
+          }
+        } else {
+          console.log("Refreshed session:", refreshedSession);
+          setUser(refreshedSession?.user ?? null);
+        }
+      } catch (error) {
+        console.error("Auth initialization error:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    initializeAuth();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log("Auth state changed:", event, session);
+        
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          setUser(session?.user ?? null);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+        }
+        
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  async function handleSignOut() {
+    const supabase = createClient();
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Sign out error:", error);
+      } else {
+        setUser(null);
+        setIsOpen(false);
+        // Force page refresh to clear any cached state
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  }
+
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <header className="shadow-inner bg-opacity-15 w-[90%] md:w-[70%] lg:w-[75%] lg:max-w-screen-xl top-5 mx-auto sticky border border-secondary z-40 rounded-2xl flex justify-between items-center p-2 bg-card">
+        <Link href="/" className="font-bold text-lg flex items-center">
+          <Image src={leseicon} alt="LESE logo" className="ml-2 w-20" />
+        </Link>
+        <div className="animate-pulse">Loading...</div>
+      </header>
+    );
+  }
+
   return (
     <header className="shadow-inner bg-opacity-15 w-[90%] md:w-[70%] lg:w-[75%] lg:max-w-screen-xl top-5 mx-auto sticky border border-secondary z-40 rounded-2xl flex justify-between items-center p-2 bg-card">
       <Link href="/" className="font-bold text-lg flex items-center">
-          <Image
-            src={leseicon}
-            alt="LESE logo"
-
-            className="ml-2 w-20"
-          />
+        <Image src={leseicon} alt="LESE logo" className="ml-2 w-20" />
       </Link>
-      {/* <!-- Mobile --> */}
+
+      {/* Mobile menu */}
       <div className="flex items-center lg:hidden">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
-            <Menu
-              onClick={() => setIsOpen(!isOpen)}
-              className="cursor-pointer lg:hidden"
-            />
+            <Menu onClick={() => setIsOpen(!isOpen)} className="cursor-pointer lg:hidden" />
           </SheetTrigger>
-
-          <SheetContent
-            side="left"
-            className="flex flex-col justify-between rounded-tr-2xl rounded-br-2xl bg-card border-secondary"
-          >
+          <SheetContent side="left" className="flex flex-col justify-between rounded-tr-2xl rounded-br-2xl bg-card border-secondary">
             <div>
               <SheetHeader className="mb-4 ml-4">
-                <SheetTitle className="flex items-center">
+                <SheetTitle>
                   <Link href="/" className="flex items-center">
-          <Image
-            src={leseicon}
-            alt="LESE logo"
-
-            className="w-20"
-          />
+                    <Image src={leseicon} alt="LESE logo" className="w-20" />
                   </Link>
                 </SheetTitle>
               </SheetHeader>
-
               <div className="flex flex-col gap-2">
                 {routeList.map(({ href, label }) => (
-                  <Button
-                    key={href}
-                    onClick={() => setIsOpen(false)}
-                    asChild
-                    variant="ghost"
-                    className="justify-start text-base"
-                  >
+                  <Button key={href} onClick={() => setIsOpen(false)} asChild variant="ghost" className="justify-start text-base">
                     <Link href={href}>{label}</Link>
                   </Button>
                 ))}
+
+                {/* Auth buttons */}
+                {user ? (
+                  <Button onClick={handleSignOut} variant="ghost" className="justify-start text-base">
+                    Sign Out ({user.email})
+                  </Button>
+                ) : (
+                  <Button onClick={() => setIsOpen(false)} asChild variant="ghost" className="justify-start text-base">
+                    <Link href="/auth">Sign In</Link>
+                  </Button>
+                )}
               </div>
             </div>
-
-            <SheetFooter className="flex-col sm:flex-col justify-start items-start">
+            <SheetFooter className="flex-col justify-start items-start">
               <Separator className="mb-2" />
-
               <ToggleTheme />
             </SheetFooter>
           </SheetContent>
         </Sheet>
       </div>
 
-      {/* <!-- Desktop --> */}
+      {/* Desktop menu */}
       <NavigationMenu className="hidden lg:block mx-auto">
         <NavigationMenuList>
-          {/* 
-         <NavigationMenuItem>
-            <NavigationMenuTrigger className="bg-card text-base">
-              Features
-            </NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="grid w-[600px] grid-cols-2 gap-5 p-4">
-                <Image
-                  src=""
-                  alt="RadixLogo"
-                  className="h-full w-full rounded-md object-cover"
-                  width={600}
-                  height={600}
-                />
-                <ul className="flex flex-col gap-2">
-                  {featureList.map(({ title, description }) => (
-                    <li
-                      key={title}
-                      className="rounded-md p-3 text-sm hover:bg-muted"
-                    >
-                      <p className="mb-1 font-semibold leading-none text-foreground">
-                        {title}
-                      </p>
-                      <p className="line-clamp-2 text-muted-foreground">
-                        {description}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-            */}
-
           <NavigationMenuItem>
             {routeList.map(({ href, label }) => (
               <NavigationMenuLink key={href} asChild>
@@ -182,23 +193,25 @@ export const Navbar = () => {
                 </Link>
               </NavigationMenuLink>
             ))}
+
+            {/* Auth buttons desktop */}
+            {user ? (
+              <Button onClick={handleSignOut} variant="ghost" className="text-base px-2">
+                Sign Out
+              </Button>
+            ) : (
+              <NavigationMenuLink asChild>
+                <Link href="/auth" className="text-base px-2">
+                  Sign In
+                </Link>
+              </NavigationMenuLink>
+            )}
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
 
       <div className="hidden lg:flex">
         <ToggleTheme />
-        {/*
-        <Button asChild size="sm" variant="ghost" aria-label="View on GitHub">
-          <Link
-            aria-label="View on GitHub"
-            href="https://github.com/nobruf/shadcn-landing-page.git"
-            target="_blank"
-          >
-            <Github className="size-5" />
-          </Link>
-        </Button>
-        */}
       </div>
     </header>
   );

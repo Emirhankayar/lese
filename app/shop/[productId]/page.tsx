@@ -1,5 +1,5 @@
-import { FooterSection } from "@/components/layout/sections/footer";
 import ProductDetailSection from "@/components/layout/sections/productdetail";
+import { FooterSection } from "@/components/layout/sections/footer";
 
 export const metadata = {
   title: "LESE - Metalcraft",
@@ -31,10 +31,11 @@ export const metadata = {
 
 
 export default function ProductDetail() {
+
+
   return (
     <>
-
-      <ProductDetailSection/>
+      <ProductDetailSection />
       <FooterSection />
     </>
   );

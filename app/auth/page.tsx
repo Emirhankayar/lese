@@ -1,88 +1,44 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { createClient } from "@/lib/sbClient";
+import { Auth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
 
 export default function AuthPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
-
-  const router = useRouter();
-  const supabase = createClientComponentClient();
-
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      }
-      router.push("/shop"); // Redirect to shop after login/signup
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const supabase = createClient();
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">
-            {isSignUp ? "Create Account" : "Login"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <form onSubmit={handleAuth} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Loading..." : isSignUp ? "Sign Up" : "Login"}
-            </Button>
-          </form>
-          <p className="mt-4 text-center text-sm text-gray-600">
-            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-blue-600 hover:underline"
-            >
-              {isSignUp ? "Login" : "Sign Up"}
-            </button>
-          </p>
-        </CardContent>
-      </Card>
+    <div className="flex justify-center items-center min-h-screen bg-background text-foreground">
+      <div className="w-full max-w-md shadow-xl p-6 rounded-lg border bg-card text-card-foreground">
+        <Auth
+          supabaseClient={supabase}
+          providers={["google"]}
+          redirectTo={`${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`}
+          appearance={{
+            theme: ThemeSupa,
+            variables: {
+              default: {
+                colors: {
+                  brand: "hsl(var(--primary))",         
+                  brandAccent: "hsl(var(--primary))",   
+                  inputBackground: "hsl(var(--background))",
+                  inputText: "hsl(var(--foreground))",
+                  inputBorder: "hsl(var(--border))",
+                  inputLabelText: "hsl(var(--muted-foreground))",
+                  messageText: "hsl(var(--muted-foreground))",
+                },
+              },
+            },
+            className: {
+              container: "space-y-4", 
+              button: "rounded-lg px-4 py-2 text-sm font-medium transition",
+              input: "border border-input rounded-md px-3 py-2 bg-background text-foreground",
+              label: "text-sm font-medium text-muted-foreground",
+            },
+          }}
+          theme="dark"
+        />
+      </div>
     </div>
   );
 }
