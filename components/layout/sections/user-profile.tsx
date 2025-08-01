@@ -19,7 +19,7 @@ import {
   Camera, Save, Eye, Loader2, Trash2, ShoppingCart, History
 } from 'lucide-react';
 import Link from 'next/link';
-
+import Image from 'next/image';
 // Types
 interface User {
   id: string;
@@ -341,7 +341,7 @@ export default function ProfilePage(): JSX.Element {
     <Card className="mb-4">
       <CardContent className="p-3 sm:p-4">
         <div className="flex items-start sm:items-center space-x-3 sm:space-x-4">
-          <img
+          <Image
             src={order.product_image}
             alt={order.product_title}
             className="w-12 h-12 sm:w-16 sm:h-16 rounded-md object-cover flex-shrink-0"
@@ -387,7 +387,7 @@ const LikedProductCard = ({ product }: { product: LikedProduct }): JSX.Element =
   <Card className="mb-4 w-full hover:shadow-lg transition-shadow duration-200">
     <CardContent className="p-3 sm:p-4 w-full">
       <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 w-full">
-        <img
+        <Image
           src={product.primary_image}
           alt={product.title}
           className="w-12 h-12 sm:w-16 sm:h-16 rounded-md object-cover flex-shrink-0"

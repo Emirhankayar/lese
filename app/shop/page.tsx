@@ -32,8 +32,7 @@ export const metadata = {
 export default function Shop() {
   return (
     <>
-
-        <ProductSection/>
+      <ProductSection/>
       <FooterSection />
     </>
   );

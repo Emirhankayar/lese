@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/sbClient";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
@@ -7,16 +8,23 @@ import { BrandingSlideComponent } from "@/components/layout/sections/branding-sl
 
 export default function AuthPage() {
   const supabase = createClient();
+  const [redirectTo, setRedirectTo] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setRedirectTo(`${window.location.origin}/shop`);
+    }
+  }, []);
 
   return (
-<div className="fixed inset-0 bg-primary flex items-center justify-center z-50">
-  <div className="w-full max-w-md shadow-xl p-6 rounded-lg border bg-card text-card-foreground">
-
-        <Auth
-          supabaseClient={supabase}
-          providers={["google"]}
-          redirectTo={`${window.location.origin}/shop`} 
-          localization={{
+    <div className="fixed inset-0 bg-primary flex items-center justify-center z-50">
+      <div className="w-full max-w-md shadow-xl p-6 rounded-lg border bg-card text-card-foreground">
+        {redirectTo && (
+          <Auth
+            supabaseClient={supabase}
+            providers={["google"]}
+            redirectTo={redirectTo}
+            localization={{
             variables: {
               sign_up: {
                 email_label: "E-posta adresi",
@@ -111,9 +119,10 @@ export default function AuthPage() {
               anchor: "text-sm hover:underline",
               divider: "my-4",
             },
-          }}
-        />
-      <BrandingSlideComponent />
+ }}
+          />
+        )}
+        <BrandingSlideComponent />
       </div>
     </div>
   );
