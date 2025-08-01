@@ -19,8 +19,8 @@ const CheckoutPage = () => {
 
   const cartSummary: CartSummary = {
     subtotal: cartItems.reduce((sum, item) => sum + item.total_price, 0),
-    tax: cartItems.reduce((sum, item) => sum + item.total_price, 0) * 0.08, // 8% tax
-    shipping: cartItems.reduce((sum, item) => sum + item.total_price, 0) > 50 ? 0 : 9.99, // Free shipping over $50
+    tax: cartItems.reduce((sum, item) => sum + item.total_price, 0) * 0.08, // 8% vergi HAHAHA
+    shipping: cartItems.reduce((sum, item) => sum + item.total_price, 0) > 50 ? 0 : 9.99, // 50 TL üzeri ücretsiz kargo HAHAHA
     total: 0,
     itemCount: cartItems.reduce((sum, item) => sum + item.quantity, 0)
   };
@@ -49,7 +49,7 @@ const fetchCartItems = async () => {
     });
 
     if (error) {
-      console.error('Error fetching cart items:', error);
+      console.error('Sepet öğelerini getirirken hata:', error);
       setError("Sepet öğelerini yüklerken hata oluştu");
       return;
     }
@@ -57,7 +57,7 @@ const fetchCartItems = async () => {
     setCartItems(data || []);
 
   } catch (err) {
-    console.error("Unexpected error:", err);
+    console.error("Beklenmedik hata:", err);
     setError("Beklenmedik bir hata oluştu");
   } finally {
     setLoading(false);
@@ -70,26 +70,23 @@ const updateOrderQuantity = async (orderId: string, newQuantity: number) => {
   try {
     const supabase = createClient();
     
-    // Use the proper RPC function
     const { data, error } = await supabase.rpc('update_cart_item_quantity', {
       order_uuid: orderId,
       new_quantity: newQuantity
     });
 
     if (error) {
-      console.error('Error updating quantity:', error);
+      console.error('Miktar güncellenirken hata:', error);
       alert(`Miktar güncellenirken hata oluştu: ${error.message}`);
       return;
     }
 
-    // Check the response from the RPC function
     if (!data?.success) {
-      console.error('RPC function returned error:', data?.error);
+      console.error('RPC fonksiyonu hata döndürdü:', data?.error);
       alert(`Miktar güncellenirken hata oluştu: ${data?.error || 'Bilinmeyen hata'}`);
       return;
     }
 
-    // Update local state with the response data
     setCartItems(prev => prev.map(item => 
       item.id === orderId 
         ? { ...item, quantity: data.new_quantity, total_price: data.new_total }
@@ -97,45 +94,41 @@ const updateOrderQuantity = async (orderId: string, newQuantity: number) => {
     ));
 
   } catch (err) {
-    console.error("Unexpected error updating quantity:", err);
+    console.error("Miktar güncellenirken beklenmedik hata:", err);
     alert("Miktar güncellenirken hata oluştu");
   } finally {
     setIsUpdating(false);
   }
 };
 
-// Fixed removeCartItem to use the proper RPC function
 const removeCartItem = async (orderId: string) => {
   setIsUpdating(true);
   
   try {
     const supabase = createClient();
     
-    // Use the proper RPC function instead of direct delete
     const { data, error } = await supabase.rpc('remove_cart_item', {
       order_uuid: orderId
     });
 
     if (error) {
-      console.error('Error removing item:', error);
+      console.error('Öğe kaldırılırken hata:', error);
       alert(`Öğeyi kaldırırken hata oluştu: ${error.message}`);
       return;
     }
 
-    // Check the response from the RPC function
     if (!data?.success) {
-      console.error('RPC function returned error:', data?.error);
+      console.error('RPC fonksiyonu hata döndürdü:', data?.error);
       alert(`Öğeyi kaldırırken hata oluştu: ${data?.error || 'Bilinmeyen hata'}`);
       return;
     }
 
-    // Update local state - remove the item from the cart
     setCartItems(prev => prev.filter(item => item.id !== orderId));
 
     console.log('Öğe başarıyla kaldırıldı:', orderId);
 
   } catch (err) {
-    console.error("Unexpected error removing item:", err);
+    console.error("Öğe kaldırılırken beklenmedik hata:", err);
     alert("Öğeyi kaldırırken hata oluştu");
   } finally {
     setIsUpdating(false);
@@ -145,7 +138,7 @@ const removeCartItem = async (orderId: string) => {
 
   const handleProceedToCheckout = async () => {
     
-    alert("Stripe integration will be implemented here!");
+    alert("Stripe entegrasyonu burada uygulanacak!");
   };
 
   useEffect(() => {
@@ -154,16 +147,16 @@ const removeCartItem = async (orderId: string) => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-24 max-w-6xl">
+      <div className="container mx-auto px-4 py-12 md:py-24 max-w-6xl">
         <div className="space-y-6">
-          <div className="h-8 bg-gray-200 rounded animate-pulse w-1/3"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="h-6 md:h-8 bg-gray-200 rounded animate-pulse w-1/2 md:w-1/3"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
             <div className="lg:col-span-2 space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded animate-pulse"></div>
+                <div key={i} className="h-24 md:h-32 bg-gray-200 rounded animate-pulse"></div>
               ))}
             </div>
-            <div className="h-64 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-48 md:h-64 bg-gray-200 rounded animate-pulse"></div>
           </div>
         </div>
       </div>
@@ -172,13 +165,16 @@ const removeCartItem = async (orderId: string) => {
 
   if (!isAuthenticated) {
     return (
-      <div className="container mx-auto px-4 py-24 max-w-6xl">
-        <Card className="p-8 text-center max-w-md mx-auto">
-          <CardContent>
-            <ShoppingBag className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+      <div className="container mx-auto px-4 py-12 md:py-24 max-w-6xl">
+        <Card className="p-6 md:p-8 text-center max-w-md mx-auto">
+          <CardContent className="p-0">
+            <ShoppingBag className="w-10 h-10 md:w-12 md:h-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold mb-2">Giriş Yapmanız Gerekli!</h3>
-            <p className="text-gray-600 mb-4">Sepetinizi görüntülemek için lütfen giriş yapın.</p>
-            <Button onClick={() => window.location.href = '/auth'}>
+            <p className="text-gray-600 mb-4 text-sm md:text-base">Sepetinizi görüntülemek için lütfen giriş yapın.</p>
+            <Button 
+              onClick={() => window.location.href = '/auth'}
+              className="w-full md:w-auto"
+            >
               Giriş Yap
             </Button>
           </CardContent>
@@ -188,20 +184,20 @@ const removeCartItem = async (orderId: string) => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-24 max-w-6xl">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+    <div className="container mx-auto px-4 py-12 md:py-24 max-w-6xl">
+      {/* Başlık */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6 md:mb-8">
         <Button 
           variant="ghost" 
           onClick={() => window.history.back()}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-start"
         >
           <ArrowLeft className="w-4 h-4" />
           Geri
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Sepet</h1>
-          <p className="text-gray-600">
+        <div className="flex-1 text-center sm:text-left">
+          <h1 className="text-2xl md:text-3xl font-bold">Sepet</h1>
+          <p className="text-gray-600 text-sm md:text-base">
             {cartItems.length > 0 
               ? `${cartItems.length} öğe${cartItems.length !== 1 ? 'ler' : ''} sepetinizde`
               : 'Sepetiniz boş'
@@ -212,7 +208,7 @@ const removeCartItem = async (orderId: string) => {
           variant="outline" 
           onClick={fetchCartItems}
           disabled={loading}
-          className="ml-auto"
+          className="w-full sm:w-auto"
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Yenile
@@ -221,31 +217,34 @@ const removeCartItem = async (orderId: string) => {
 
       {error && (
         <Alert className="mb-6">
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription className="text-sm md:text-base">{error}</AlertDescription>
         </Alert>
       )}
 
       {cartItems.length === 0 ? (
-        <Card className="p-8 text-center">
-          <CardContent>
-            <ShoppingBag className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Sepetiniz Boş</h3>
-            <p className="text-gray-600 mb-6">
+        <Card className="p-6 md:p-8 text-center">
+          <CardContent className="p-0">
+            <ShoppingBag className="w-12 h-12 md:w-16 md:h-16 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg md:text-xl font-semibold mb-2">Sepetiniz Boş</h3>
+            <p className="text-gray-600 mb-6 text-sm md:text-base">
               Görünüşe göre henüz sepetinize herhangi bir ürün eklemediniz.
             </p>
-            <Button onClick={() => window.location.href = '/shop'}>
+            <Button 
+              onClick={() => window.location.href = '/shop'}
+              className="w-full md:w-auto"
+            >
               Alışverişe Başla
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Cart Items */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+          
           <div className="lg:col-span-2 space-y-4">
-            <Card className="p-4">
-              <CardHeader className="px-0 pt-0">
-                <CardTitle className="flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5" />
+            <Card className="p-3 md:p-4">
+              <CardHeader className="px-0 pt-0 pb-2 md:pb-4">
+                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                  <ShoppingBag className="w-4 h-4 md:w-5 md:h-5" />
                   Sepet Öğeleri ({cartItems.length})
                 </CardTitle>
               </CardHeader>
@@ -262,7 +261,7 @@ const removeCartItem = async (orderId: string) => {
             ))}
           </div>
 
-          {/* Cart Summary */}
+
           <div className="lg:sticky lg:top-24 lg:self-start">
             <CartSummaryComponent
               summary={cartSummary}
@@ -273,12 +272,12 @@ const removeCartItem = async (orderId: string) => {
         </div>
       )}
 
-      {/* Continue Shopping */}
       {cartItems.length > 0 && (
-        <div className="mt-8 text-center">
+        <div className="mt-6 md:mt-8 text-center">
           <Button 
             variant="outline" 
             onClick={() => window.location.href = '/shop'}
+            className="w-full md:w-auto"
           >
             Alışverişe Devam Et
           </Button>

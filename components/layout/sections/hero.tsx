@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, User, Store, Send} from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 
@@ -45,11 +45,23 @@ export const HeroSection = () => {
   </p>
 
   {/* Button */}
-  <div className="flex justify-center">
+  <div className="flex flex-col justify-center gap-4 sm:flex-row sm:justify-center sm:gap-8">
+    <Link href="/profile">
+      <Button className="bg-blue-200 font-bold group/arrow">
+        Hesap Oluştur
+        <User className="size-5 ml-2 group-hover/arrow:translate-y-1 transition-transform" />
+      </Button>
+    </Link>
+    <Link href="/shop">
+      <Button className="bg-pink-200 font-bold group/arrow">
+        Mağazaya Git
+        <Store className="size-5 ml-2 group-hover/arrow:translate-y-1 transition-transform" />
+      </Button>
+    </Link>
     <Link href="#contact">
-      <Button className="font-bold group/arrow">
+      <Button className="bg-green-200 font-bold group/arrow">
         İletişime Geç
-        <ArrowDown className="size-5 ml-2 group-hover/arrow:translate-y-1 transition-transform" />
+        <Send className="size-5 ml-2 group-hover/arrow:translate-y-1 transition-transform" />
       </Button>
     </Link>
   </div>

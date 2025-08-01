@@ -43,10 +43,10 @@ const CartItemComponent = ({ item, onQuantityChange, onRemoveItem, isUpdating }:
 
   return (
     <Card className="overflow-hidden">
-      <CardContent className="p-4">
-        <div className="flex items-start gap-4">
+      <CardContent className="p-3 md:p-4">
+        <div className="flex flex-col sm:flex-row items-start gap-3 md:gap-4">
           {/* Product Image */}
-          <div className="relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
+          <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 mx-auto sm:mx-0">
             <Image
               src={item.product_image || '/placeholder-product.jpg'}
               alt={item.product_title}
@@ -56,56 +56,56 @@ const CartItemComponent = ({ item, onQuantityChange, onRemoveItem, isUpdating }:
           </div>
 
           {/* Product Details */}
-          <div className="flex-1 space-y-2">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="font-semibold text-lg leading-tight">{item.product_title}</h3>
-                <p className="text-sm text-gray-600 mt-1">Added {item.time_ago}</p>
+          <div className="flex-1 space-y-2 w-full">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-2">
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="font-semibold text-base md:text-lg leading-tight">{item.product_title}</h3>
+                <p className="text-xs md:text-sm text-gray-600 mt-1">{item.time_ago} eklendi</p>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleRemove}
                 disabled={isRemoving || isUpdating}
-                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                className="text-red-500 hover:text-red-700 hover:bg-red-50 self-center sm:self-start"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
             </div>
 
             {/* Product Variants */}
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-1 md:gap-2 flex-wrap justify-center sm:justify-start">
               <Badge variant="outline" className="text-xs">
                 <Package className="w-3 h-3 mr-1" />
-                ${item.selected_price}
+                ₺{item.selected_price}
               </Badge>
               {item.selected_size && (
                 <Badge variant="outline" className="text-xs">
-                  Size: {item.selected_size}
+                  Beden: {item.selected_size}
                 </Badge>
               )}
               {item.selected_weight && (
                 <Badge variant="outline" className="text-xs">
-                  Weight: {item.selected_weight}
+                  Ağırlık: {item.selected_weight}
                 </Badge>
               )}
             </div>
 
             {/* Quantity Controls and Price */}
-            <div className="flex items-center justify-between pt-2">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">Quantity:</span>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+              <div className="flex items-center gap-2 md:gap-3 order-2 sm:order-1">
+                <span className="text-xs md:text-sm font-medium">Miktar:</span>
                 <div className="flex items-center border rounded-md">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleQuantityDecrease}
                     disabled={localQuantity <= 1 || isUpdating}
-                    className="h-8 w-8 p-0"
+                    className="h-7 w-7 md:h-8 md:w-8 p-0"
                   >
                     <Minus className="w-3 h-3" />
                   </Button>
-                  <span className="px-3 py-1 text-sm font-medium min-w-[2rem] text-center">
+                  <span className="px-2 md:px-3 py-1 text-sm font-medium min-w-[1.5rem] md:min-w-[2rem] text-center">
                     {localQuantity}
                   </span>
                   <Button
@@ -113,20 +113,20 @@ const CartItemComponent = ({ item, onQuantityChange, onRemoveItem, isUpdating }:
                     size="sm"
                     onClick={handleQuantityIncrease}
                     disabled={isUpdating}
-                    className="h-8 w-8 p-0"
+                    className="h-7 w-7 md:h-8 md:w-8 p-0"
                   >
                     <Plus className="w-3 h-3" />
                   </Button>
                 </div>
               </div>
 
-              <div className="text-right">
-                <div className="text-lg font-bold text-blue-600">
-                  ${totalPrice.toFixed(2)}
+              <div className="text-center sm:text-right order-1 sm:order-2">
+                <div className="text-lg md:text-xl font-bold text-blue-600">
+                  ₺{totalPrice.toFixed(2)}
                 </div>
                 {localQuantity > 1 && (
                   <div className="text-xs text-gray-500">
-                    ${unitPrice.toFixed(2)} each
+                    ₺{unitPrice.toFixed(2)} tanesi
                   </div>
                 )}
               </div>
