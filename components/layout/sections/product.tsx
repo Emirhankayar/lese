@@ -55,8 +55,6 @@ export const ProductSection = ({
       try {
         setLoading(true);
         setError(null);
-
-        // Use the simplified database function
         const { data, error } = await supabase.rpc('get_shop_products_simple', {
           limit_count: limit,
           offset_count: 0,
