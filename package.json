@@ -33,6 +33,7 @@
     "export": "^0.1.337",
     "lucide-react": "^0.383.0",
     "next": "14.2.3",
+    "next-sitemap": "^4.2.3",
     "next-themes": "^0.3.0",
     "ngrok": "^5.0.0-beta.2",
     "react": "^18",
