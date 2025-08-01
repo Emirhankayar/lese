@@ -1,8 +1,10 @@
+
 "use client";
-import { Menu } from "lucide-react";
+import { Menu, Store, ShoppingCart, LogOut, User, Phone, CircleCheckBig, HelpCircle, Circle } from "lucide-react";
 import leseicon from "../icons/g14.svg";
 import React, { useEffect, useState } from 'react';
 import { createClient } from "@/lib/sbClient";
+
 import {
   Sheet,
   SheetContent,
@@ -10,7 +12,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "../ui/sheet";
+} from "../ui/sheet"
 import { Separator } from "../ui/separator";
 import {
   NavigationMenu,
@@ -20,7 +22,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "../ui/navigation-menu";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { ToggleTheme } from "./toogle-theme";
@@ -30,30 +32,18 @@ interface RouteProps {
   label: string;
 }
 
-const routeList: RouteProps[] = [
-  {
-    href: "#about",
-    label: "Hakkımızda",
-  },
-  {
-    href: "#services",
-    label: "Hizmetlerimiz",
-  },
-  {
-    href: "#contact",
-    label: "İletişim",
-  },
-  {
-    href: "/shop",
-    label: "Mağaza",
-  },
+const routeList: { href: string; label: string; icon?: React.ReactNode }[] = [
+  { href: "/#about", label: "Hakkımızda", icon: <HelpCircle className="w-4 h-4" /> },
+  { href: "/#services", label: "Hizmetlerimiz", icon: <CircleCheckBig className="w-4 h-4" /> },
+  { href: "/#contact", label: "İletişim", icon: <Phone className="w-4 h-4" /> },
+  { href: "/shop", label: "Mağaza", icon: <Store className="w-4 h-4" /> },
+  { href: "/cart", label: "Sepet", icon: <ShoppingCart className="w-4 h-4" /> },
+  { href: "/profile", label: "Profil", icon: <User className="w-4 h-4" /> },
 ];
-
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
     const supabase = createClient();
@@ -153,21 +143,37 @@ if (loading) {
                 </SheetTitle>
               </SheetHeader>
               <div className="flex flex-col gap-2">
-                {routeList.map(({ href, label }) => (
-                  <Button key={href} onClick={() => setIsOpen(false)} asChild variant="ghost" className="justify-start text-base">
-                    <Link href={href}>{label}</Link>
-                  </Button>
-                ))}
+{user && (
+  <div className="px-4 py-4 border-b border-gray-300 text-md">
+    {user.email}
+  </div>
+)}
 
+{routeList.map(({ href, label, icon }) => (
+  <Button
+    key={href}
+    onClick={() => setIsOpen(false)}
+    asChild
+    variant="ghost"
+    className="justify-start text-base flex gap-2"
+  >
+    <Link href={href} className="flex items-center gap-2 py-8">
+      {icon}{label}
+    </Link>
+  </Button>
+))}
                 {/* Auth buttons */}
                 {user ? (
-                  <Button onClick={handleSignOut} variant="ghost" className="justify-start text-base">
-                    Çıkış Yap ({user.email})
+                  <Button onClick={handleSignOut} variant="ghost" className="text-base justify-start gap-2">
+                    <LogOut className="w-4 h-4 text-red-500 hover:text-red-700 transition-colors" /> Çıkış Yap
                   </Button>
                 ) : (
-                  <Button onClick={() => setIsOpen(false)} asChild variant="ghost" className="justify-start text-base">
+                  <Button onClick={() => setIsOpen(false)} asChild variant="outline"
+  style={{ backgroundColor: "#3235d1", color: "white", borderColor: "#3235d1" }}
+  className="text-base hover:opacity-90 transition">
                     <Link href="/auth">Giriş Yap</Link>
                   </Button>
+                  
                 )}
               </div>
             </div>
@@ -180,32 +186,76 @@ if (loading) {
       </div>
 
       {/* Desktop menu */}
-      <NavigationMenu className="hidden lg:block mx-auto">
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            {routeList.map(({ href, label }) => (
-              <NavigationMenuLink key={href} asChild>
-                <Link href={href} className="text-base px-2">
-                  {label}
-                </Link>
-              </NavigationMenuLink>
-            ))}
+<NavigationMenu className="hidden lg:block mx-auto">
+  <NavigationMenuList>
+    {/* Dropdown group for first 3 items */}
+    <NavigationMenuItem>
+      <NavigationMenuTrigger>
+        Anasayfa 
+      </NavigationMenuTrigger>
+      <NavigationMenuContent>
+        <div className="flex flex-col p-2 space-y-1">
+          {routeList.slice(0, 3).map(({ href, label, icon }) => (
+            <NavigationMenuLink
+              key={href}
+              asChild
+            >
+              <Link
+                href={href}
+                className="flex items-center gap-2 px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                {icon}
+                {label}
+              </Link>
+            </NavigationMenuLink>
+          ))}
+        </div>
+      </NavigationMenuContent>
+    </NavigationMenuItem>
 
-            {/* Auth buttons desktop */}
-            {user ? (
-              <Button onClick={handleSignOut} variant="ghost" className="text-base px-2">
-                Çıkış Yap
-              </Button>
-            ) : (
-              <NavigationMenuLink asChild>
-                <Link href="/auth" className="text-base px-2">
-                  Giriş Yap
-                </Link>
-              </NavigationMenuLink>
-            )}
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
+    {/* Individual buttons for remaining items */}
+    {routeList.slice(3).map(({ href, label, icon }) => (
+      <NavigationMenuItem key={href}>
+        <Button
+          onClick={() => setIsOpen(false)}
+          asChild
+          variant="ghost"
+          className="justify-start text-base"
+        >
+          <Link href={href} className="flex items-center gap-2">
+            {icon}
+            {label}
+          </Link>
+        </Button>
+      </NavigationMenuItem>
+    ))}
+
+    {/* Auth buttons */}
+    {user ? (
+      <NavigationMenuItem>
+        <Button onClick={handleSignOut} variant="ghost" className="text-base justify-start">
+          <LogOut className="w-4 h-4 text-red-500 hover:text-red-700 transition-colors" />
+        </Button>
+      </NavigationMenuItem>
+    ) : (
+      <NavigationMenuItem>
+        <NavigationMenuLink asChild>
+          <Link href="/auth" className="text-base px-2">
+            <Button
+              variant="outline"
+              style={{ backgroundColor: "#3235d1", color: "white", borderColor: "#3235d1" }}
+              className="text-base hover:opacity-90 transition"
+            >
+              Giriş Yap
+            </Button>
+          </Link>
+        </NavigationMenuLink>
+      </NavigationMenuItem>
+    )}
+  </NavigationMenuList>
+</NavigationMenu>
+
+
 
       <div className="hidden lg:flex">
         <ToggleTheme />

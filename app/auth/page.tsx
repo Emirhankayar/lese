@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/sbClient";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { SponsorsSection } from "@/components/layout/sections/branding-slide";
+import { BrandingSlideComponent } from "@/components/layout/sections/branding-slide";
 
 export default function AuthPage() {
   const supabase = createClient();
@@ -113,7 +113,7 @@ export default function AuthPage() {
             },
           }}
         />
-      <SponsorsSection />
+      <BrandingSlideComponent />
       </div>
     </div>
   );

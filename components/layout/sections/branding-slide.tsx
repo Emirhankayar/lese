@@ -4,11 +4,11 @@ import "@devnomic/marquee/dist/index.css";
 import Image from "next/image"; 
 import leseicon from "../../icons/g14.svg";
 
-interface sponsorsProps {
+interface brandingSlideProps {
   name: string;
 }
 
-const sponsors: sponsorsProps[] = [
+const brandings: brandingSlideProps[] = [
   {
     name: "",
   },
@@ -32,18 +32,16 @@ const sponsors: sponsorsProps[] = [
   },
 ];
 
-export const SponsorsSection = () => {
+export const BrandingSlideComponent = () => {
   return (
 <section id="branding" className="max-w-[75%] mx-auto py-8">
-
-
       <div className="mx-auto">
         <Marquee
           className="gap-[3rem]"
           fade
           innerClassName="gap-[3rem]"
           pauseOnHover
-        >{sponsors.map(({ name }) => (
+        >{brandings.map(({ name }) => (
   <div
     key={name}
     className="flex items-center text-xl md:text-2xl font-medium"
