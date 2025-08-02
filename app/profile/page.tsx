@@ -1,5 +1,5 @@
 import ProfilePage from "@/components/layout/sections/user-profile";
-export const profileMetadata = {
+export const metadata = {
   title: "Profilim - LESE Metalcraft",
   description: "LESE Metalcraft profil sayfanız. Hesap bilgilerinizi güncelleyin, sipariş geçmişinizi görüntüleyin.",
   openGraph: {

@@ -5,7 +5,8 @@ import { createClient } from "@/lib/sbClient";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { BrandingSlideComponent } from "@/components/layout/sections/branding-slide";
-export const authMetadata = {
+
+export const metadata = {
   title: "Giriş Yap - LESE Metalcraft",
   description: "LESE Metalcraft hesabınıza giriş yapın. Özel fiyatlar ve hızlı sipariş imkanlarından yararlanın.",
   openGraph: {

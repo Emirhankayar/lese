@@ -1,5 +1,5 @@
 import CheckoutPage from '@/components/layout/sections/checkout';
-export const cartMetadata = {
+export const metadata = {
   title: "Sepetim - LESE Metalcraft",
   description: "LESE Metalcraft alışveriş sepetiniz. Seçtiğiniz ürünleri gözden geçirin ve siparişinizi tamamlayın.",
   openGraph: {
