@@ -29,6 +29,7 @@ export async function generateMetadata({ params }: { params: { productId: string
     params.productId
   );
 }
+
 export default function ProductDetail() {
 
 

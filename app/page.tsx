@@ -10,25 +10,16 @@ export const metadata = {
   description: "LESE Metalcraft Ltd. Şti. – Hassas Metal İşleme ve Üretim",
   openGraph: {
     type: "website",
-    url: "https://github.com/emirhankayar/lese",
+    url: "https://lesemetalcraft.com",
     title: "LESE - Metalcraft",
     description: "LESE Metalcraft Ltd. Şti. – Hassas Metal İşleme ve Üretim",
     images: [
       {
-        url: "https://res.cloudinary.com/dbzv9xfjp/image/upload/v1723499276/og-images/shadcn-vue.jpg",
+        url: "https://www.lesemetalcraft.com/favicon-32z32.png",
         width: 1200,
         height: 630,
         alt: "LESE - Metalcraft",
       },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    site: "https://github.com/emirhankayar/lese",
-    title: "LESE - Metalcraft",
-    description: "LESE Metalcraft Ltd. Şti. – Hassas Metal İşleme ve Üretim",
-    images: [
-      "https://res.cloudinary.com/dbzv9xfjp/image/upload/v1723499276/og-images/shadcn-vue.jpg",
     ],
   },
 };
