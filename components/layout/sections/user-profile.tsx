@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+
 // Types
 interface User {
   id: string;
@@ -33,6 +34,7 @@ interface Profile {
   email?: string;
 }
 
+// Fixed: Added 'pending' to the status union type
 interface Order {
   id: string;
   product_id: string;
@@ -42,7 +44,7 @@ interface Order {
   selected_price: number;
   total_price: number;
   time_ago: string;
-  status: 'delivered' | 'shipped' | 'processing' | 'cancelled' | 'cart';
+  status: 'delivered' | 'shipped' | 'processing' | 'cancelled' | 'cart' | 'pending';
 }
 
 interface LikedProduct {
@@ -61,18 +63,36 @@ interface EditForm {
 
 // Free avatar options
 const avatarOptions: string[] = [
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=John',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Jane',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Mike',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
-  'https://api.dicebear.com/7.x/avataaars/svg?seed=Emma',
-  'https://api.dicebear.com/7.x/personas/svg?seed=David',
-  'https://api.dicebear.com/7.x/personas/svg?seed=Lisa',
-  'https://api.dicebear.com/7.x/big-smile/svg?seed=Happy',
-  'https://api.dicebear.com/7.x/big-smile/svg?seed=Joy',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Explorer',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Wanderer'
+'https://api.dicebear.com/9.x/identicon/svg?seed=Alpha',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Beta',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Gamma',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Delta',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Epsilon',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Zeta',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Theta',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Lambda',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Sigma',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Omega',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Phoenix',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Dragon',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Tiger',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Eagle',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Wolf',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Lion',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Falcon',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Shark',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Cobra',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Panther',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Quantum',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Nexus',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Vertex',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Matrix',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Vector',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Cipher',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Pixel',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Binary',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Helix',
+  'https://api.dicebear.com/9.x/identicon/svg?seed=Prism'
 ];
 
 export default function ProfilePage(): JSX.Element {
@@ -101,7 +121,7 @@ export default function ProfilePage(): JSX.Element {
       const { data: { user }, error } = await supabase.auth.getUser();
       
       if (error || !user) {
-        router.push('/auth'); // Redirect to your login page
+        router.push('/auth');
         return;
       }
       
@@ -147,17 +167,46 @@ export default function ProfilePage(): JSX.Element {
 
   const loadOrders = async (): Promise<void> => {
     try {
-      // Using your database function
-      const { data, error } = await supabase
+      console.log('Loading orders...');
+
+      const { data: allOrdersData, error: allOrdersError } = await supabase
         .rpc('get_user_orders', {
           limit_count: 50,
           offset_count: 0
         });
       
-      if (error) throw error;
-      setOrders(data || []);
+      if (allOrdersError) {
+        console.error('Error loading all orders:', allOrdersError);
+        throw allOrdersError;
+      }
+
+      const { data: cartData, error: cartError } = await supabase
+        .rpc('get_cart_items', {
+          limit_count: 50,
+          offset_count: 0
+        });
+      
+      if (cartError) {
+        console.error('Error loading cart items:', cartError);
+        console.log('Continuing with empty cart...');
+      }
+
+      const allOrders = [...(allOrdersData || [])];
+      const cartItems = [...(cartData || [])];
+    
+      cartItems.forEach(cartItem => {
+        if (!allOrders.find(order => order.id === cartItem.id)) {
+          allOrders.push(cartItem);
+        }
+      });
+
+      console.log('Total orders loaded:', allOrders.length);
+      console.log('Cart items loaded:', cartItems.length);
+      
+      setOrders(allOrders || []);
     } catch (error) {
       console.error('Error loading orders:', error);
+      setOrders([]);
     }
   };
 
@@ -181,7 +230,6 @@ export default function ProfilePage(): JSX.Element {
 
       if (error) throw error;
 
-      // Transform data
       const transformedData: LikedProduct[] = data.map((like: any) => ({
         id: like.products.id,
         title: like.products.title,
@@ -266,30 +314,60 @@ export default function ProfilePage(): JSX.Element {
     }
   };
 
+  // Fixed: Proper error type handling
   const handleRemoveFromCart = async (orderId: string): Promise<void> => {
     if (!user) return;
     
     try {
-      // Assuming you have an orders table where you can delete cart items
-      const { error } = await supabase
-        .from('orders') // or your cart table name
-        .delete()
-        .eq('id', orderId)
-        .eq('status', 'cart');
+      console.log('=== USING RPC FUNCTION ===');
+      console.log('Removing order via RPC:', orderId, 'for user:', user.id);
+      
+      // Use your dedicated RPC function instead of direct delete
+      const { data, error } = await supabase.rpc('remove_cart_item', {
+        order_uuid: orderId
+      });
 
-      if (error) throw error;
+      console.log('RPC response:', data);
+      console.log('RPC error:', error);
 
-      setOrders(prev => prev.filter(order => order.id !== orderId));
+      if (error) {
+        console.error('RPC error:', error);
+        throw error;
+      }
+
+      // Check the response from the function
+      if (!data?.success) {
+        const errorMsg = data?.error || 'Unknown error occurred';
+        console.error('RPC function failed:', errorMsg);
+        throw new Error(errorMsg);
+      }
+
+      console.log('✅ Successfully removed item via RPC');
+
+      // Update local state to remove the item
+      setOrders(prev => {
+        const filtered = prev.filter(order => order.id !== orderId);
+        console.log('Local state updated, remaining cart items:', 
+          filtered.filter(o => o.status === 'cart').length);
+        return filtered;
+      });
+
+      await loadOrders();
       
       toast({
         title: "Ürün sepetten kaldırıldı",
         description: "Ürün sepetinizden başarıyla kaldırıldı.",
       });
+
     } catch (error) {
       console.error('Error removing from cart:', error);
+      
+      // Fixed: Proper error handling for unknown type
+      const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen bir hata oluştu';
+      
       toast({
         title: "Hata",
-        description: "Ürün sepetten kaldırılırken hata oluştu.",
+        description: `Ürün sepetten kaldırılırken hata oluştu: ${errorMessage}`,
         variant: "destructive",
       });
     }
@@ -301,7 +379,16 @@ export default function ProfilePage(): JSX.Element {
     setShowAvatarDialog(false);
   };
 
-  // Utility functions
+  // Fixed: Added 'pending' to the statusMap
+  const statusMap: Record<Order['status'], string> = {
+    cart: "Sepet",
+    pending: "Beklemede",
+    processing: "İşleniyor",
+    shipped: "Gönderildi",
+    delivered: "Teslim Edildi",
+    cancelled: "İptal Edildi",
+  };
+
   const getStatusIcon = (status: Order['status']): JSX.Element => {
     switch (status) {
       case 'delivered':
@@ -310,6 +397,8 @@ export default function ProfilePage(): JSX.Element {
         return <Truck className="h-4 w-4 text-blue-500" />;
       case 'processing':
         return <Clock className="h-4 w-4 text-yellow-500" />;
+      case 'pending':
+        return <Clock className="h-4 w-4 text-orange-500" />;
       case 'cancelled':
         return <XCircle className="h-4 w-4 text-red-500" />;
       case 'cart':
@@ -327,6 +416,8 @@ export default function ProfilePage(): JSX.Element {
         return 'bg-blue-100 text-blue-800';
       case 'processing':
         return 'bg-yellow-100 text-yellow-800';
+      case 'pending':
+        return 'bg-orange-100 text-orange-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       case 'cart':
@@ -336,7 +427,7 @@ export default function ProfilePage(): JSX.Element {
     }
   };
 
-// Component definitions
+  // Component definitions
   const OrderCard = ({ order, showRemoveButton = false }: { order: Order; showRemoveButton?: boolean }): JSX.Element => (
     <Card className="mb-4">
       <CardContent className="p-3 sm:p-4">
@@ -344,37 +435,42 @@ export default function ProfilePage(): JSX.Element {
           <Image
             src={order.product_image}
             alt={order.product_title}
-            className="w-12 h-12 sm:w-16 sm:h-16 rounded-md object-cover flex-shrink-0"
+            width={48} 
+            height={48}
+            className="rounded-md object-cover flex-shrink-0 sm:w-16 sm:h-16"
           />
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-sm sm:text-base truncate">{order.product_title}</h4>
-            <p className="text-xs sm:text-sm text-gray-600">
-              Qty: {order.quantity} × ${order.selected_price}
+            <h4 className="font-semibold text-sm sm:text-base truncate py-1">{order.product_title}</h4>
+            <p className="text-xs sm:text-sm text-gray-600 py-1">
+              Adet: {order.quantity} × {order.selected_price} ₺
             </p>
-            <p className="text-xs sm:text-sm font-medium">Total: ${order.total_price}</p>
+            <p className="text-xs sm:text-sm font-medium py-1">Total: {order.total_price} ₺</p>
             <p className="text-xs text-gray-500">{order.time_ago}</p>
           </div>
           <div className="flex flex-col items-end space-y-1 sm:space-y-2 flex-shrink-0">
             <Badge className={`${getStatusColor(order.status)} text-xs`}>
               <div className="flex items-center space-x-1">
                 {getStatusIcon(order.status)}
-                <span className="capitalize hidden sm:inline">{order.status === 'cart' ? 'sepet' : order.status}</span>
-                <span className="capitalize sm:hidden">{order.status === 'cart' ? 'sep' : order.status.slice(0, 3)}</span>
+                <span className="capitalize hidden sm:inline">{statusMap[order.status] || order.status}</span>
               </div>
             </Badge>
-          <Link href={`/shop/${order.product_id}`} className="inline-block">
-            <Button variant="outline" size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0 cursor-pointer">
-              <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
-            </Button>
-          </Link>
+            
+            <Link href={`/shop/${order.product_id}`} className="inline-block">
+              <Button variant="outline" size="sm" className="h-7 sm:h-8 p-1 sm:p-2 flex items-center space-x-1 px-8">
+                <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="text-xs hidden sm:inline">Gör</span>
+              </Button>
+            </Link>
+            
             {showRemoveButton && (
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => handleRemoveFromCart(order.id)}
-                className="text-red-500 hover:text-red-700 h-7 w-7 sm:h-8 sm:w-8 p-0 mt-2"
+                className="text-red-500 hover:text-red-700 h-7 sm:h-8 p-1 sm:p-2 flex items-center space-x-1 px-8"
               >
                 <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="text-xs hidden sm:inline">Kaldır</span>
               </Button>
             )}
           </div>
@@ -383,45 +479,49 @@ export default function ProfilePage(): JSX.Element {
     </Card>
   );
 
-const LikedProductCard = ({ product }: { product: LikedProduct }): JSX.Element => (
-  <Card className="mb-4 w-full hover:shadow-lg transition-shadow duration-200">
-    <CardContent className="p-3 sm:p-4 w-full">
-      <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 w-full">
-        <Image
-          src={product.primary_image}
-          alt={product.title}
-          className="w-12 h-12 sm:w-16 sm:h-16 rounded-md object-cover flex-shrink-0"
-        />
-        <div className="flex-1 min-w-0">
-          <h4 className="font-semibold py-1 text-sm sm:text-base truncate">{product.title}</h4>
-          <p className="text-xs sm:text-sm py-1 text-gray-600 truncate">{product.primary_category}</p>
-          <p className="text-xs sm:text-sm py-1 font-medium text-green-600">{product.price_display}</p>
-        </div>
-        <div className="flex flex-col items-end space-y-1 sm:space-y-2 flex-shrink-0">
+  const LikedProductCard = ({ product }: { product: LikedProduct }): JSX.Element => (
+    <Card className="mb-4 hover:shadow-lg transition-shadow duration-200">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex items-start sm:items-center space-x-3 sm:space-x-4">
+          <Image
+            src={product.primary_image}
+            alt={product.title}
+            width={48} 
+            height={48}
+            className="rounded-md object-cover flex-shrink-0 sm:w-16 sm:h-16"
+          />
+          <div className="flex-1 min-w-0">
+            <h4 className="font-semibold text-sm sm:text-base truncate py-1">{product.title}</h4>
+            <p className="text-xs sm:text-sm text-gray-600 truncate py-1">{product.primary_category}</p>
+            <p className="text-xs sm:text-sm font-medium text-green-600 py-1">{product.price_display}</p>
+          </div>
+          <div className="flex flex-col items-end space-y-1 sm:space-y-2 flex-shrink-0">
             <Badge className="text-red-500 text-xs bg-red-200">
-                <Heart className="h-4 w-4 mr-1" />Beğeni
-                
+              <Heart className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="hidden sm:inline">Beğeni</span>
             </Badge>
-          <Link href={`/shop/${product.id}`} className="inline-block">
-            <Button variant="outline" size="sm" className="h-7 w-7 sm:h-8 sm:w-8 p-0 cursor-pointer">
-              <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+
+            <Link href={`/shop/${product.id}`} className="inline-block">
+              <Button variant="outline" size="sm" className="h-7 sm:h-8 p-1 sm:p-2 flex items-center space-x-1 px-8">
+                <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="text-xs hidden sm:inline">Gör</span>
+              </Button>
+            </Link>
+            
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => handleUnlikeProduct(product.id)}
+              className="text-red-500 hover:text-red-700 h-7 sm:h-8 p-1 sm:p-2 flex items-center space-x-1 px-8"
+            >
+              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="text-xs hidden sm:inline">Kaldır</span>
             </Button>
-          </Link>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => handleUnlikeProduct(product.id)}
-            className="text-red-500 hover:text-red-700 h-7 w-7 sm:h-8 sm:w-8 p-0"
-          >
-            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-          </Button>
+          </div>
         </div>
-      </div>
-    </CardContent>
-  </Card>
-);
-
-
+      </CardContent>
+    </Card>
+  );
 
   const LoadingSkeleton = (): JSX.Element => (
     <div className="container mx-auto px-3 sm:px-4 py-20 sm:py-24 mb:py-32 max-w-4xl">
@@ -463,6 +563,10 @@ const LikedProductCard = ({ product }: { product: LikedProduct }): JSX.Element =
   const trackingOrders: Order[] = orders.filter(order => 
     order.status !== 'delivered' && order.status !== 'cart'
   );
+  const subtotal = cartOrders.reduce((total, order) => total + order.total_price, 0);
+  const taxRate = 0.2;
+  const taxAmount = subtotal * taxRate;
+  const totalWithTax = subtotal + taxAmount;
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-20 sm:py-24 mb:py-32 max-w-4xl">
@@ -631,15 +735,23 @@ const LikedProductCard = ({ product }: { product: LikedProduct }): JSX.Element =
                   ))}
                   <div className="mt-6 p-4 rounded-lg">
                     <div className="flex justify-between items-center">
-                      <span className="font-semibold">Toplam Tutar:</span>
-                      <span className="font-bold text-lg">
-                        ${cartOrders.reduce((total, order) => total + order.total_price, 0).toFixed(2)}
-                      </span>
+                      <span className="font-semibold">Ara Toplam:</span>
+                      <span>{subtotal.toFixed(2)} ₺</span>
                     </div>
-                    <Link href={"/cart"} className="block">
-                    <Button className="mt-4 w-full">Alışverişi Tamamla</Button>
-                    </Link>
+
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold">KDV (%20):</span>
+                      <span>{taxAmount.toFixed(2)} ₺</span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-lg">Toplam Tutar:</span>
+                      <span className="font-bold text-lg">{totalWithTax.toFixed(2)} ₺</span>
+                    </div>
                   </div>
+                  <Link href={"/cart"} className="block">
+                    <Button className="mt-4 w-full">Alışverişi Tamamla</Button>
+                  </Link>
                 </div>
               ) : (
                 <div className="text-center py-6 sm:py-8 text-gray-500">
@@ -666,11 +778,11 @@ const LikedProductCard = ({ product }: { product: LikedProduct }): JSX.Element =
             </CardHeader>
             <CardContent className="p-4 sm:p-6">
               {likedProducts.length > 0 ? (
-              <div className="space-y-3 sm:space-y-4">
-                {likedProducts.map((product) => (
-                  <LikedProductCard key={product.id} product={product} />
-                ))}
-              </div>
+                <div className="space-y-3 sm:space-y-4">
+                  {likedProducts.map((product) => (
+                    <LikedProductCard key={product.id} product={product} />
+                  ))}
+                </div>
               ) : (
                 <div className="text-center py-6 sm:py-8 text-gray-500">
                   <Heart className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
@@ -710,7 +822,6 @@ const LikedProductCard = ({ product }: { product: LikedProduct }): JSX.Element =
             </CardContent>
           </Card>
         </TabsContent>
-
 
         {/* Order Tracking Tab */}
         <TabsContent value="tracking">

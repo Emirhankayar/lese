@@ -77,11 +77,11 @@ const CartItemComponent = ({ item, onQuantityChange, onRemoveItem, isUpdating }:
             <div className="flex gap-1 md:gap-2 flex-wrap justify-center sm:justify-start">
               <Badge variant="outline" className="text-xs">
                 <Package className="w-3 h-3 mr-1" />
-                ₺{item.selected_price}
+                {item.selected_price} ₺
               </Badge>
               {item.selected_size && (
                 <Badge variant="outline" className="text-xs">
-                  Beden: {item.selected_size}
+                  Boyut: {item.selected_size}
                 </Badge>
               )}
               {item.selected_weight && (
@@ -122,11 +122,11 @@ const CartItemComponent = ({ item, onQuantityChange, onRemoveItem, isUpdating }:
 
               <div className="text-center sm:text-right order-1 sm:order-2">
                 <div className="text-lg md:text-xl font-bold text-blue-600">
-                  ₺{totalPrice.toFixed(2)}
+                  {totalPrice.toFixed(2)} ₺
                 </div>
                 {localQuantity > 1 && (
                   <div className="text-xs text-gray-500">
-                    ₺{unitPrice.toFixed(2)} tanesi
+                    {unitPrice.toFixed(2)} ₺ tanesi
                   </div>
                 )}
               </div>

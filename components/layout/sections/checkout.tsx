@@ -16,16 +16,17 @@ const CheckoutPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
 
   const cartSummary: CartSummary = {
     subtotal: cartItems.reduce((sum, item) => sum + item.total_price, 0),
-    tax: cartItems.reduce((sum, item) => sum + item.total_price, 0) * 0.08, // 8% vergi HAHAHA
-    shipping: cartItems.reduce((sum, item) => sum + item.total_price, 0) > 50 ? 0 : 9.99, // 50 TL üzeri ücretsiz kargo HAHAHA
+    tax: cartItems.reduce((sum, item) => sum + item.total_price, 0) * 0.2, // 20% KDV
+    shipping: cartItems.reduce((sum, item) => sum + item.total_price, 0) > 50 ? 0 : 9.99, // 50 TL üzeri ücretsiz kargo
     total: 0,
     itemCount: cartItems.reduce((sum, item) => sum + item.quantity, 0)
   };
   
-  cartSummary.total = cartSummary.subtotal + cartSummary.tax + cartSummary.shipping;
+  cartSummary.total = cartSummary.subtotal + cartSummary.tax;
 
 const fetchCartItems = async () => {
   setLoading(true);
@@ -135,11 +136,45 @@ const removeCartItem = async (orderId: string) => {
   }
 };
 
-
-  const handleProceedToCheckout = async () => {
+const handleProceedToCheckout = async () => {
+  setIsProcessingCheckout(true);
+  
+  try {
+    const supabase = createClient();
     
-    alert("Stripe entegrasyonu burada uygulanacak!");
-  };
+    // Get all cart item IDs
+    const orderIds = cartItems.map(item => item.id);
+    
+    if (orderIds.length === 0) {
+      alert("Sepetinizde ürün bulunmuyor.");
+      return;
+    }
+
+    // Update status column to 'pending' - DB trigger will handle the rest
+    const { error } = await supabase
+      .from('orders')
+      .update({ status: 'pending' })
+      .in('id', orderIds);
+
+    if (error) {
+      console.error('Sipariş durumu güncellenirken hata:', error);
+      alert(`Sipariş işlenirken hata oluştu: ${error.message}`);
+      return;
+    }
+
+    // Show success message
+    alert("Siparişiniz başarıyla oluşturuldu! Durum: Beklemede");
+    
+    // Clear the cart items from local state since they're now pending orders
+    setCartItems([]);
+
+  } catch (err) {
+    console.error("Sipariş işlenirken beklenmedik hata:", err);
+    alert("Sipariş işlenirken hata oluştu");
+  } finally {
+    setIsProcessingCheckout(false);
+  }
+};
 
   useEffect(() => {
     fetchCartItems();
@@ -261,17 +296,15 @@ const removeCartItem = async (orderId: string) => {
             ))}
           </div>
 
-
           <div className="lg:sticky lg:top-24 lg:self-start">
             <CartSummaryComponent
               summary={cartSummary}
               onProceedToCheckout={handleProceedToCheckout}
-              isProcessing={isUpdating}
+              isProcessing={isUpdating || isProcessingCheckout}
             />
           </div>
         </div>
       )}
-
       {cartItems.length > 0 && (
         <div className="mt-6 md:mt-8 text-center">
           <Button 

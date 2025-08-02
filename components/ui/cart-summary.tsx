@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, CreditCard, Truck } from "lucide-react";
+import { ShoppingCart, CreditCard } from "lucide-react";
 import { CartSummary } from "@/lib/checkout-types";
 
 interface CartSummaryProps {
@@ -46,20 +46,9 @@ const CartSummaryComponent = ({ summary, onProceedToCheckout, isProcessing }: Ca
           <span>₺{summary.subtotal.toFixed(2)}</span>
         </div>
 
-        {/* Shipping */}
-        <div className="flex justify-between text-sm md:text-base">
-          <span className="flex items-center gap-1">
-            <Truck className="w-3 h-3" />
-            Kargo
-          </span>
-          <span>
-            {summary.shipping === 0 ? 'ÜCRETSİZ' : `₺${summary.shipping.toFixed(2)}`}
-          </span>
-        </div>
-
         {/* Tax */}
         <div className="flex justify-between text-sm md:text-base">
-          <span>Vergi</span>
+          <span>KDV (%20)</span>
           <span>₺{summary.tax.toFixed(2)}</span>
         </div>
 
@@ -79,20 +68,9 @@ const CartSummaryComponent = ({ summary, onProceedToCheckout, isProcessing }: Ca
           disabled={isProcessing || summary.itemCount === 0}
         >
           <CreditCard className="w-4 h-4 mr-2" />
-          {isProcessing ? 'İşleniyor...' : 'Ödemeye Geç'}
+          {isProcessing ? 'İşleniyor...' : 'Siparişi Tamamla'}
         </Button>
 
-        {/* Free Shipping Notice */}
-        {summary.shipping === 0 && summary.subtotal > 0 && (
-          <div className="text-xs md:text-sm text-green-600 text-center bg-green-50 p-2 md:p-3 rounded">
-            🎉 Ücretsiz kargo hakkını kazandınız!
-          </div>
-        )}
-
-        {/* Security Notice */}
-        <div className="text-xs md:text-sm text-gray-500 text-center">
-          🔒 Stripe tarafından desteklenen güvenli ödeme
-        </div>
       </CardContent>
     </Card>
   );
