@@ -1,7 +1,9 @@
 import ProductDetailSection from "@/components/layout/sections/productdetail";
 import { FooterSection } from "@/components/layout/sections/footer";
 import { supabase } from "@/lib/sbClient";
-export const generateProductMetadata = (productName: string, productDescription: string, productId: string) => ({
+
+// Helper function moved inside or to a separate utils file
+const createProductMetadata = (productName: string, productDescription: string, productId: string) => ({
   title: `${productName} - LESE Metalcraft`,
   description: `${productDescription} | LESE Metalcraft hassas metal işleme ürünleri.`,
   openGraph: {
@@ -21,7 +23,6 @@ export const generateProductMetadata = (productName: string, productDescription:
 });
 
 export async function generateMetadata({ params }: { params: { productId: string } }) {
-  
   try {
     const { data } = await supabase.rpc('get_product_with_details', {
       product_uuid: params.productId,
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: { params: { productId: string
     });
 
     if (data?.product) {
-      return generateProductMetadata(
+      return createProductMetadata(
         data.product.name,
         data.product.description,
         params.productId
@@ -40,8 +41,8 @@ export async function generateMetadata({ params }: { params: { productId: string
     console.error('Error fetching product for metadata:', error);
   }
 
-  // Fallback 
-  return generateProductMetadata(
+  // Fallback metadata
+  return createProductMetadata(
     "Ürün Detayı",
     "LESE Metalcraft ürün sayfası",
     params.productId
@@ -49,8 +50,6 @@ export async function generateMetadata({ params }: { params: { productId: string
 }
 
 export default function ProductDetail() {
-
-
   return (
     <>
       <ProductDetailSection />
