@@ -5,6 +5,8 @@ import { createClient } from "@/lib/sbClient";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { BrandingSlideComponent } from "@/components/layout/sections/branding-slide";
+import { authMetadata as metadata } from '@/lib/metadata';
+export { metadata };
 
 export default function AuthPage() {
   const supabase = createClient();

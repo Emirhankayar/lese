@@ -9,7 +9,7 @@ import ProductGallery from "@/components/ui/product-gallery";
 import ProductInfo from "@/components/ui/product-info";
 import Comments from "@/components/ui/product-comments";
 import { LoadingState, ErrorState } from "@/components/ui/loading-error-states";
-import AuthModal from "@/components/ui/auth-modal"; // Import the AuthModal component
+import AuthModal from "@/components/ui/auth-modal"; 
 
 const ProductDetailSection = () => {
   const { productId } = useParams();
@@ -24,14 +24,12 @@ const ProductDetailSection = () => {
   const [isAddingComment, setIsAddingComment] = useState(false);
   const [alert, setAlert] = useState<{ type: "success" | "error"; text: string } | null>(null);
   
-  // Auth Modal states
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authAction, setAuthAction] = useState<'cart' | 'like' | 'comment' | 'rate'>('cart');
-
-  // Function to refresh product data and user interactions
+  
   const refreshProductData = async () => {
     if (!productId) return;
-
+    
     const supabase = createClient();
     
     try {
@@ -40,13 +38,13 @@ const ProductDetailSection = () => {
         setIsAuthenticated(false);      
         return;
       }
-
+      
       const { data, error } = await supabase.rpc('get_product_with_details', {
         product_uuid: productId,
         user_uuid: user?.id || null,
         comments_limit: 10
       });
-
+      
       if (!error && data) {
         setProduct(data.product);
         setComments(data.comments || []);
@@ -60,9 +58,10 @@ const ProductDetailSection = () => {
       console.error("Error refreshing product data:", err);
     }
   };
-
+  
   useEffect(() => {
     const fetchProduct = async () => {
+      
       if (!productId) return;
 
       const supabase = createClient();
