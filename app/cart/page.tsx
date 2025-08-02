@@ -1,8 +1,24 @@
 import CheckoutPage from '@/components/layout/sections/checkout';
-import { cartMetadata } from '@/lib/metadata';
-import type { Metadata } from 'next';
+export const cartMetadata = {
+  title: "Sepetim - LESE Metalcraft",
+  description: "LESE Metalcraft alışveriş sepetiniz. Seçtiğiniz ürünleri gözden geçirin ve siparişinizi tamamlayın.",
+  openGraph: {
+    type: "website",
+    url: "https://lesemetalcraft.com/cart",
+    title: "Sepetim - LESE Metalcraft",
+    description: "LESE Metalcraft alışveriş sepetiniz. Seçtiğiniz ürünleri gözden geçirin ve siparişinizi tamamlayın.",
+    images: [
+      {
+        url: "https://www.lesemetalcraft.com/android-chrome-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "LESE Metalcraft - Sepet",
+      },
+    ],
+  },
+};
 
-export const metadata: Metadata = cartMetadata;
+
 export default function CheckoutRoute() {
   return (
     <>

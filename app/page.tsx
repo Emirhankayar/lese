@@ -15,9 +15,9 @@ export const metadata = {
     description: "LESE Metalcraft Ltd. Şti. – Hassas Metal İşleme ve Üretim",
     images: [
       {
-        url: "https://www.lesemetalcraft.com/favicon-32z32.png",
-        width: 1200,
-        height: 630,
+        url: "https://www.lesemetalcraft.com/android-chrome-512x512.png",
+        width: 512,
+        height: 512,
         alt: "LESE - Metalcraft",
       },
     ],
